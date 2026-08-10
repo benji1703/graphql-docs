@@ -1,0 +1,41 @@
+{
+  "name": "graphql-docs",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Fast, searchable GraphQL reference documentation with an embedded Apollo Sandbox.",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "schema:pull": "node scripts/pull-schema.mjs",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc -b --pretty false"
+  },
+  "dependencies": {
+    "@apollo/sandbox": "2.7.4",
+    "graphql": "17.0.2",
+    "lucide-react": "0.545.0",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "react-markdown": "10.1.0",
+    "react-router-dom": "7.18.2",
+    "remark-gfm": "4.0.1"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "6.9.1",
+    "@testing-library/react": "16.3.0",
+    "@types/node": "24.9.1",
+    "@types/react": "19.2.2",
+    "@types/react-dom": "19.2.2",
+    "@vitejs/plugin-react": "6.0.5",
+    "jsdom": "27.0.1",
+    "typescript": "5.9.3",
+    "vite": "8.2.1",
+    "vitest": "4.1.10"
+  },
+  "engines": {
+    "node": ">=20.19"
+  }
+}
