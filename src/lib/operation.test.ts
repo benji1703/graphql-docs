@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { schemaFromSDL } from './loadSchema';
-import { generateOperation } from './operation';
+import { generateOperation, generateOperationVariables } from './operation';
 import { SAMPLE_SCHEMA } from '../schema/sample';
 
 describe('generateOperation', () => {
@@ -16,5 +16,9 @@ describe('generateOperation', () => {
 
   it('rejects non-root fields', () => {
     expect(() => generateOperation(schema, 'Country', 'name')).toThrow('not a root operation');
+  });
+
+  it('generates starter variables from argument input types', () => {
+    expect(generateOperationVariables(schema, 'Query', 'country')).toEqual({ code: 'replace-with-id' });
   });
 });

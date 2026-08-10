@@ -7,6 +7,7 @@ const ACRONYMS = new Set([
 
 export function humanizeGraphQLName(value: string): string {
   return value
+    .replace(/^i18n[_-]?/i, 'translated_')
     .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
     .replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2')
     .replace(/[_-]+/g, ' ')
@@ -18,6 +19,10 @@ export function humanizeGraphQLName(value: string): string {
       return lower ? lower[0].toUpperCase() + lower.slice(1) : lower;
     })
     .join(' ');
+}
+
+export function describeUndocumentedArgument(name: string) {
+  return `Value for the ${humanizeGraphQLName(name).toLowerCase()} argument.`;
 }
 
 export function describeUndocumentedField(

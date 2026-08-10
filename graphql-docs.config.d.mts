@@ -9,7 +9,6 @@ export interface GraphQLDocsConfig {
   site: {
     title: string;
     explorerEndpoint: string;
-    explorerMode: 'external' | 'embedded';
     allowConfiguration: boolean;
   };
 }

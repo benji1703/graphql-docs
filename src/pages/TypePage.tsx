@@ -28,8 +28,9 @@ import { TypeBadge } from '../components/TypeBadge';
 import { useSchema } from '../context/SchemaContext';
 import { formatFieldSignature, getTypeCategory, typePath } from '../lib/schema';
 import { generateOperation } from '../lib/operation';
-import { describeUndocumentedField, humanizeGraphQLName } from '../lib/descriptions';
+import { describeUndocumentedArgument, describeUndocumentedField, humanizeGraphQLName } from '../lib/descriptions';
 import { NotFoundPage } from './NotFoundPage';
+import { OperationPage } from './OperationPage';
 
 const PAGE_SIZE = 100;
 
@@ -55,6 +56,9 @@ export function TypePage() {
   }, [selectedField, type]);
 
   if (!type || type.name.startsWith('__')) return <NotFoundPage />;
+  if (selectedField && isObjectType(type) && isRootType(schema, type)) {
+    return <OperationPage schema={schema} parentType={type} fieldName={selectedField} />;
+  }
 
   const category = getTypeCategory(type);
   const filterValue = deferredFilter.trim();
@@ -201,7 +205,14 @@ function OutputFieldCard({ schema, parentName, field, selected, isOperation }: {
   return (
     <article id={`definition-${field.name}`} className={`definition-card ${selected ? 'is-selected' : ''}`}>
       <div className="definition-card__signature">
-        <div className="definition-card__title"><h3>{humanizeGraphQLName(field.name)}</h3>{field.deprecationReason && <TypeBadge kind="deprecated" />}</div>
+        <div className="definition-card__title">
+          {isOperation ? (
+            <Link className="definition-card__title-link" to={typePath(parentName, field.name)}>
+              <h3>{humanizeGraphQLName(field.name)}</h3><ArrowRight size={15} />
+            </Link>
+          ) : <h3>{humanizeGraphQLName(field.name)}</h3>}
+          {field.deprecationReason && <TypeBadge kind="deprecated" />}
+        </div>
         <code>{formatFieldSignature(field)}</code>
       </div>
       {field.description ? <Markdown>{field.description}</Markdown> : <p className="generated-description">{describeUndocumentedField(schema, parentName, field)}</p>}
@@ -216,7 +227,7 @@ function OutputFieldCard({ schema, parentName, field, selected, isOperation }: {
                 <Link to={typePath(getNamedType(argument.type).name)}>{String(argument.type)}</Link>
                 {argument.defaultValue !== undefined && <span> = {JSON.stringify(argument.defaultValue)}</span>}
               </code>
-              <span>{argument.description || formatArgumentFallback(argument.name)}</span>
+              <span>{argument.description || describeUndocumentedArgument(argument.name)}</span>
             </div>
           ))}
         </div>
@@ -224,7 +235,7 @@ function OutputFieldCard({ schema, parentName, field, selected, isOperation }: {
       <div className="definition-card__footer">
         <span>Returns</span><Link to={typePath(namedType.name)}><code>{String(field.type)}</code><ArrowRight size={13} /></Link>
         {isOperation && <Link className="definition-card__try" to={`/explorer?document=${encodeURIComponent(generateOperation(schema, parentName, field.name))}`}><Play size={11} fill="currentColor" /> Try operation</Link>}
-        <Link className="definition-card__permalink" to={typePath(parentName, field.name)}>Permalink</Link>
+        <Link className="definition-card__permalink" to={typePath(parentName, field.name)}>{isOperation ? 'Deep dive' : 'Permalink'}</Link>
       </div>
     </article>
   );
@@ -314,8 +325,4 @@ function getGeneratedTypeSummary(type: GraphQLNamedType, schema: ReturnType<type
     return `Object type exposing ${fieldCount.toLocaleString()} fields.`;
   }
   return 'GraphQL type in the Silverfort Cloud Platform API.';
-}
-
-function formatArgumentFallback(name: string) {
-  return `Value for the ${name.replace(/([a-z0-9])([A-Z])/g, '$1 $2').toLowerCase()} argument.`;
 }

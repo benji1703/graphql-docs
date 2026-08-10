@@ -1,12 +1,15 @@
 import {
   getNamedType,
   isEnumType,
+  isInputObjectType,
   isInterfaceType,
+  isListType,
   isNonNullType,
   isObjectType,
   isScalarType,
   isUnionType,
   type GraphQLField,
+  type GraphQLInputType,
   type GraphQLNamedType,
   type GraphQLOutputType,
   type GraphQLSchema,
@@ -31,6 +34,41 @@ export function generateOperation(schema: GraphQLSchema, parentName: string, fie
   const body = selection ? `${invocation} {\n${indent(selection, 2)}\n  }` : invocation;
 
   return `${root.kind} ${operationName}${definition} {\n  ${body}\n}`;
+}
+
+export function generateOperationVariables(schema: GraphQLSchema, parentName: string, fieldName: string) {
+  const parent = [schema.getQueryType(), schema.getMutationType(), schema.getSubscriptionType()]
+    .find((type) => type?.name === parentName);
+  const field = parent?.getFields()[fieldName];
+  if (!parent || !field) throw new Error(`${parentName}.${fieldName} is not a root operation.`);
+
+  return Object.fromEntries(field.args.map((argument) => [
+    argument.name,
+    sampleInputValue(argument.type, new Set()),
+  ]));
+}
+
+function sampleInputValue(type: GraphQLInputType, ancestors: Set<string>): unknown {
+  if (isNonNullType(type)) return sampleInputValue(type.ofType, ancestors);
+  if (isListType(type)) return [];
+  if (isEnumType(type)) return type.getValues()[0]?.name ?? null;
+  if (isInputObjectType(type)) {
+    if (ancestors.has(type.name)) return {};
+    const nextAncestors = new Set(ancestors).add(type.name);
+    const requiredFields = Object.values(type.getFields()).filter(
+      (field) => isNonNullType(field.type) && field.defaultValue === undefined,
+    );
+    return Object.fromEntries(requiredFields.map((field) => [field.name, sampleInputValue(field.type, nextAncestors)]));
+  }
+  if (isScalarType(type)) {
+    if (type.name === 'Boolean') return false;
+    if (type.name === 'Int' || type.name === 'Float') return 0;
+    if (type.name === 'ID') return 'replace-with-id';
+    if (/json/i.test(type.name)) return {};
+    if (/date|time/i.test(type.name)) return '2026-01-01T00:00:00Z';
+    return 'value';
+  }
+  return null;
 }
 
 function buildSelection(

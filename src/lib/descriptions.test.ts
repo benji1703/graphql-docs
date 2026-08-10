@@ -7,6 +7,7 @@ describe('generated schema descriptions', () => {
     expect(humanizeGraphQLName('abstractApplicationEntities')).toBe('Abstract Application Entities');
     expect(humanizeGraphQLName('awsIdentityById')).toBe('AWS Identity By ID');
     expect(humanizeGraphQLName('AccessLevelGcp')).toBe('Access Level GCP');
+    expect(humanizeGraphQLName('i18n_dataSource')).toBe('Translated Data Source');
   });
 
   it('explains collection and identifier queries', () => {

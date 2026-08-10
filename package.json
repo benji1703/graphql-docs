@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "Fast, searchable GraphQL reference documentation with an Apollo Sandbox workflow.",
+  "description": "Fast, searchable GraphQL reference documentation with an embedded native explorer.",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
@@ -14,7 +14,6 @@
     "typecheck": "tsc -b --pretty false"
   },
   "dependencies": {
-    "@apollo/sandbox": "2.7.4",
     "graphql": "17.0.2",
     "lucide-react": "0.545.0",
     "react": "19.2.8",
