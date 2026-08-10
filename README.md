@@ -1,6 +1,6 @@
 # GraphQL Docs
 
-A fast, searchable GraphQL API reference with a full Apollo Sandbox built in. It turns an introspectable endpoint or SDL file into a Swagger-like documentation site with type-safe navigation, field-level deep links, Markdown descriptions, and fuzzy search.
+A fast, searchable GraphQL API reference with an Apollo Sandbox workflow. It turns an introspectable endpoint or SDL file into a Swagger-like documentation site with type-safe navigation, field-level deep links, readable generated explanations, Markdown descriptions, and fuzzy search.
 
 **[Open the live demo](https://benji1703.github.io/graphql-docs/)**
 
@@ -11,7 +11,7 @@ The checked-in demo is generated from `https://api.cloudplatform.app.silverfort.
 - GraphQL queries, mutations, subscriptions, objects, inputs, enums, interfaces, unions, and scalars
 - `⌘ K` / `Ctrl K` fuzzy finder across types, operations, and fields (plus arguments and enum values on smaller schemas)
 - Field signatures, descriptions, arguments, defaults, deprecations, return-type links, and permalinks
-- Apollo Sandbox with headers, variables, history, and live execution
+- Apollo Sandbox launch flow with generated operations, endpoint copying, and optional embedding
 - Runtime schema switching through endpoint introspection, public SDL URLs, pasted SDL, or local files
 - Markdown and GFM in schema descriptions
 - Static deployment with no application server
@@ -58,6 +58,7 @@ export default {
   site: {
     title: 'Acme API',
     explorerEndpoint: 'https://api.example.com/graphql',
+    explorerMode: 'embedded',
     allowConfiguration: true,
   },
 }
@@ -71,11 +72,12 @@ Copy `.env.example` to `.env.local` when you need deployment-specific settings:
 | --- | --- |
 | `VITE_SITE_NAME` | Product name shown in the header |
 | `VITE_GRAPHQL_ENDPOINT` | Apollo Sandbox endpoint and optional browser introspection target |
+| `VITE_EXPLORER_MODE` | `external` for an Apollo Studio launcher or `embedded` for an in-page Sandbox |
 | `VITE_SCHEMA_URL` | Public SDL URL loaded instead of `public/schema.graphql` |
 | `VITE_INTROSPECTION_HEADERS` | Public-only headers used for browser introspection |
 | `VITE_ALLOW_CONFIGURATION` | Set to `false` to lock schema switching in a published portal |
 
-Browser introspection requires the GraphQL server to allow the documentation site's origin through CORS. Build-time generation with `schema:pull` avoids that requirement. Apollo Sandbox executes requests from Apollo's embedded Studio origin, which may need to be allowlisted separately by the API.
+Browser introspection and an embedded Sandbox require the GraphQL server to allow the documentation site's origin through CORS. Build-time generation with `schema:pull` avoids the first requirement. Use `explorerMode: 'external'` when an API permits Apollo Studio but does not allow the static documentation origin, as the Silverfort demo does.
 
 ## Commands
 
@@ -99,7 +101,7 @@ For another static host, publish `dist/` after running `npm run build`.
 - React + TypeScript + Vite
 - GraphQL.js for SDL parsing and introspection
 - A bounded, schema-specific fuzzy scorer for low-latency lookup on huge graphs
-- Apollo Embedded Sandbox for live operations
+- Apollo Sandbox launcher or optional embedded explorer for live operations
 - React Router hash routing for portable static hosting
 - Vitest for schema-model and loader tests
 

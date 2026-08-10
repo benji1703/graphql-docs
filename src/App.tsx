@@ -14,7 +14,7 @@ export function App() {
         <Route index element={<OverviewPage />} />
         <Route path="docs/:typeName" element={<Suspense fallback={<div className="route-loader">Loading definition…</div>}><TypePage /></Suspense>} />
         <Route path="docs/:typeName/:fieldName" element={<Suspense fallback={<div className="route-loader">Loading definition…</div>}><TypePage /></Suspense>} />
-        <Route path="explorer" element={<Suspense fallback={<div className="route-loader">Loading Apollo Sandbox…</div>}><ExplorerPage /></Suspense>} />
+        <Route path="explorer" element={<Suspense fallback={<div className="route-loader">Loading explorer…</div>}><ExplorerPage /></Suspense>} />
         <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>

@@ -28,6 +28,7 @@ import { TypeBadge } from '../components/TypeBadge';
 import { useSchema } from '../context/SchemaContext';
 import { formatFieldSignature, getTypeCategory, typePath } from '../lib/schema';
 import { generateOperation } from '../lib/operation';
+import { describeUndocumentedField, humanizeGraphQLName } from '../lib/descriptions';
 import { NotFoundPage } from './NotFoundPage';
 
 const PAGE_SIZE = 100;
@@ -199,8 +200,11 @@ function OutputFieldCard({ schema, parentName, field, selected, isOperation }: {
   const namedType = getNamedType(field.type);
   return (
     <article id={`definition-${field.name}`} className={`definition-card ${selected ? 'is-selected' : ''}`}>
-      <div className="definition-card__signature"><code>{formatFieldSignature(field)}</code>{field.deprecationReason && <TypeBadge kind="deprecated" />}</div>
-      {field.description && <Markdown>{field.description}</Markdown>}
+      <div className="definition-card__signature">
+        <div className="definition-card__title"><h3>{humanizeGraphQLName(field.name)}</h3>{field.deprecationReason && <TypeBadge kind="deprecated" />}</div>
+        <code>{formatFieldSignature(field)}</code>
+      </div>
+      {field.description ? <Markdown>{field.description}</Markdown> : <p className="generated-description">{describeUndocumentedField(schema, parentName, field)}</p>}
       {field.deprecationReason && <div className="deprecation"><AlertTriangle size={15} />{field.deprecationReason}</div>}
       {field.args.length > 0 && (
         <div className="argument-table">
