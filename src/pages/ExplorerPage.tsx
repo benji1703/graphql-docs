@@ -15,11 +15,13 @@ import { isObjectType, parse, validate } from 'graphql';
 import { useDeferredValue, useMemo, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { siteConfig } from '../config';
+import { OperationProviderSelect } from '../components/OperationProviderSelect';
 import { useSchema } from '../context/SchemaContext';
 import { humanizeGraphQLName } from '../lib/descriptions';
 import { getExplorerCatalog } from '../lib/explorerCatalog';
 import { createExplorerHeaders } from '../lib/explorerHeaders';
 import { generateOperation, generateOperationVariables, getOperationBuilderDefaults } from '../lib/operation';
+import { getOperationProviderBuckets, operationMatchesProvider, type OperationProviderId } from '../lib/operationProviders';
 import { typePath } from '../lib/schema';
 
 type OperationKind = 'query' | 'mutation';
@@ -34,6 +36,7 @@ export function ExplorerPage() {
   const initial = useMemo(() => getInitialOperation(schema), [schema]);
   const [kind, setKind] = useState<OperationKind>('query');
   const [search, setSearch] = useState('');
+  const [provider, setProvider] = useState<OperationProviderId>('all');
   const [sidePanel, setSidePanel] = useState<SidePanel>('operations');
   const deferredSearch = useDeferredValue(search.trim().toLowerCase());
   const [requestOption, setRequestOption] = useState<RequestOption>('variables');
@@ -69,16 +72,19 @@ export function ExplorerPage() {
   }, [schema, selectedOperation]);
 
   const rootType = kind === 'query' ? schema.getQueryType() : schema.getMutationType();
+  const rootFields = useMemo(() => rootType ? Object.values(rootType.getFields()) : [], [rootType]);
+  const providerBuckets = useMemo(() => getOperationProviderBuckets(rootFields), [rootFields]);
   const operations = useMemo(() => {
     if (!rootType) return [];
-    return Object.values(rootType.getFields())
+    return rootFields
       .filter((field) => {
+        if (!operationMatchesProvider(field, provider)) return false;
         if (!deferredSearch) return true;
         const label = humanizeGraphQLName(field.name).toLowerCase();
         return field.name.toLowerCase().includes(deferredSearch) || label.includes(deferredSearch);
       })
       .slice(0, 120);
-  }, [rootType, deferredSearch]);
+  }, [rootType, rootFields, provider, deferredSearch]);
 
   const selectOperation = (fieldName: string) => {
     if (!rootType) return;
@@ -203,9 +209,10 @@ export function ExplorerPage() {
           {sidePanel === 'operations' ? (
             <>
               <div className="native-explorer__kind-tabs">
-                <button className={kind === 'query' ? 'is-active' : ''} onClick={() => setKind('query')}>Queries <span>{schema.getQueryType() ? Object.keys(schema.getQueryType()!.getFields()).length.toLocaleString() : 0}</span></button>
-                <button className={kind === 'mutation' ? 'is-active' : ''} onClick={() => setKind('mutation')}>Mutations <span>{schema.getMutationType() ? Object.keys(schema.getMutationType()!.getFields()).length.toLocaleString() : 0}</span></button>
+                <button className={kind === 'query' ? 'is-active' : ''} onClick={() => { setKind('query'); setProvider('all'); }}>Queries <span>{schema.getQueryType() ? Object.keys(schema.getQueryType()!.getFields()).length.toLocaleString() : 0}</span></button>
+                <button className={kind === 'mutation' ? 'is-active' : ''} onClick={() => { setKind('mutation'); setProvider('all'); }}>Mutations <span>{schema.getMutationType() ? Object.keys(schema.getMutationType()!.getFields()).length.toLocaleString() : 0}</span></button>
               </div>
+              <OperationProviderSelect buckets={providerBuckets} value={provider} onChange={setProvider} compact />
               <label className="native-explorer__search"><Search size={14} /><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder={`Search ${kind === 'query' ? 'queries' : 'mutations'}`} /></label>
               <div className="native-explorer__operation-list">
                 {operations.map((field) => (

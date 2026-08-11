@@ -10,6 +10,7 @@ The checked-in demo is generated from `https://api.cloudplatform.app.silverfort.
 
 - GraphQL queries, mutations, subscriptions, objects, inputs, enums, interfaces, unions, and scalars
 - `⌘ K` / `Ctrl K` fuzzy finder across types, operations, and fields (plus arguments and enum values on smaller schemas)
+- Schema-derived provider buckets for AWS, Azure, GCP, Cloudflare, Okta, GitHub, and other integrations
 - Field signatures, descriptions, arguments, defaults, deprecations, return-type links, and permalinks
 - Native embedded GraphQL workspace with schema-driven field/filter selection, generated operations, opt-in variables, headers, validation, and JSON responses
 - Runtime schema switching through endpoint introspection, public SDL URLs, pasted SDL, or local files

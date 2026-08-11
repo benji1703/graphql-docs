@@ -24,10 +24,12 @@ import {
   type GraphQLNamedType,
 } from 'graphql';
 import { Markdown } from '../components/Markdown';
+import { OperationProviderSelect } from '../components/OperationProviderSelect';
 import { TypeBadge } from '../components/TypeBadge';
 import { useSchema } from '../context/SchemaContext';
 import { formatFieldSignature, getTypeCategory, typePath } from '../lib/schema';
 import { generateOperation } from '../lib/operation';
+import { getOperationProviderBuckets, operationMatchesProvider, type OperationProviderId } from '../lib/operationProviders';
 import { describeUndocumentedArgument, describeUndocumentedField, humanizeGraphQLName } from '../lib/descriptions';
 import { NotFoundPage } from './NotFoundPage';
 import { OperationPage } from './OperationPage';
@@ -40,15 +42,22 @@ export function TypePage() {
   const type = schema.getType(decodeURIComponent(typeName));
   const selectedField = fieldName ? decodeURIComponent(fieldName) : undefined;
   const [filter, setFilter] = useState('');
+  const [provider, setProvider] = useState<OperationProviderId>('all');
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const deferredFilter = useDeferredValue(filter);
+  const operationFields = useMemo(
+    () => type && isObjectType(type) && isRootType(schema, type) ? Object.values(type.getFields()) : [],
+    [schema, type],
+  );
+  const providerBuckets = useMemo(() => getOperationProviderBuckets(operationFields), [operationFields]);
 
   useEffect(() => {
     setFilter('');
+    setProvider('all');
     setVisibleCount(PAGE_SIZE);
   }, [typeName]);
 
-  useEffect(() => setVisibleCount(PAGE_SIZE), [deferredFilter]);
+  useEffect(() => setVisibleCount(PAGE_SIZE), [deferredFilter, provider]);
 
   useEffect(() => {
     if (!selectedField) return;
@@ -92,7 +101,11 @@ export function TypePage() {
           visibleCount={visibleCount}
           onLoadMore={() => setVisibleCount((count) => count + PAGE_SIZE)}
           selectedName={selectedField}
-          items={Object.values(type.getFields()).filter((field) => matchesDefinitionFilter(field, filterValue))}
+          items={Object.values(type.getFields()).filter((field) => (
+            matchesDefinitionFilter(field, filterValue)
+            && (!isRootType(schema, type) || operationMatchesProvider(field, provider))
+          ))}
+          toolbarExtra={isRootType(schema, type) ? <OperationProviderSelect buckets={providerBuckets} value={provider} onChange={setProvider} /> : undefined}
           render={(field) => <OutputFieldCard schema={schema} parentName={type.name} field={field} selected={field.name === selectedField} isOperation={isRootType(schema, type)} />}
         />
       )}
@@ -151,7 +164,7 @@ export function TypePage() {
   );
 }
 
-function DefinitionList<T extends { name: string }>({ title, count, filter, isFiltering, setFilter, visibleCount, onLoadMore, selectedName, items, render }: {
+function DefinitionList<T extends { name: string }>({ title, count, filter, isFiltering, setFilter, visibleCount, onLoadMore, selectedName, items, toolbarExtra, render }: {
   title: string;
   count: number;
   filter: string;
@@ -161,6 +174,7 @@ function DefinitionList<T extends { name: string }>({ title, count, filter, isFi
   onLoadMore: () => void;
   selectedName?: string;
   items: T[];
+  toolbarExtra?: React.ReactNode;
   render: (item: T) => React.ReactNode;
 }) {
   const visibleItems = useMemo(() => {
@@ -173,17 +187,22 @@ function DefinitionList<T extends { name: string }>({ title, count, filter, isFi
     <section className="definition-section">
       <div className="definition-section__toolbar">
         <SectionTitle title={title} count={count} />
-        {count > 12 && (
-          <label className="field-filter">
-            <Search size={16} />
-            <input
-              value={filter}
-              onChange={(event) => setFilter(event.target.value)}
-              placeholder={`Search ${count.toLocaleString()} ${title.toLowerCase()}`}
-              aria-label={`Search ${title.toLowerCase()}`}
-            />
-            {filter && <button type="button" onClick={() => setFilter('')} aria-label="Clear field search"><X size={14} /></button>}
-          </label>
+        {(toolbarExtra || count > 12) && (
+          <div className="definition-section__controls">
+            {toolbarExtra}
+            {count > 12 && (
+              <label className="field-filter">
+                <Search size={16} />
+                <input
+                  value={filter}
+                  onChange={(event) => setFilter(event.target.value)}
+                  placeholder={`Search ${count.toLocaleString()} ${title.toLowerCase()}`}
+                  aria-label={`Search ${title.toLowerCase()}`}
+                />
+                {filter && <button type="button" onClick={() => setFilter('')} aria-label="Clear field search"><X size={14} /></button>}
+              </label>
+            )}
+          </div>
         )}
       </div>
       {filter && <div className="filter-summary">{isFiltering ? 'Searching the full type…' : `${items.length.toLocaleString()} ${items.length === 1 ? 'match' : 'matches'} for “${filter}”`}</div>}
