@@ -1,12 +1,11 @@
-import { ArrowRight, Braces, Box, Cable, Command, FileInput, Layers3, Play, Sparkles } from 'lucide-react';
+import { ArrowRight, Command, FileInput, Layers3 } from 'lucide-react';
 import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useSchema } from '../context/SchemaContext';
-import { formatFieldSignature, getSchemaStats, getTypeGroups, typePath } from '../lib/schema';
+import { formatFieldSignature, getTypeGroups, typePath } from '../lib/schema';
 
 export function OverviewPage() {
-  const { schema, source, explorerEndpoint } = useSchema();
-  const stats = useMemo(() => getSchemaStats(schema), [schema]);
+  const { schema } = useSchema();
   const groups = useMemo(() => getTypeGroups(schema), [schema]);
   const roots = [
     { label: 'Queries', type: schema.getQueryType(), accent: 'query' },
@@ -16,28 +15,6 @@ export function OverviewPage() {
 
   return (
     <div className="page overview-page">
-      <section className="hero">
-        <div className="eyebrow"><Sparkles size={14} /> Silverfort Cloud Platform</div>
-        <h1>Explore the graph.<br /><span>Build with confidence.</span></h1>
-        <p>Every Silverfort operation, identity entity, argument, and relationship in one fast, searchable reference.</p>
-        <div className="hero__actions">
-          <Link className="button button--primary" to={schema.getQueryType() ? typePath(schema.getQueryType()!.name) : '/'}>
-            Browse operations <ArrowRight size={17} />
-          </Link>
-          <Link className="button button--secondary" to="/explorer"><Play size={15} fill="currentColor" /> Open explorer</Link>
-        </div>
-        <div className="hero__meta">
-          <span><span className="status-dot" /> {source.label}</span>
-          <span className="hero__endpoint">{explorerEndpoint}</span>
-        </div>
-      </section>
-
-      <section className="stats" aria-label="Schema statistics">
-        <Stat icon={<Cable />} value={stats.operationCount} label="operations" />
-        <Stat icon={<Box />} value={stats.typeCount} label="documented types" />
-        <Stat icon={<Braces />} value={stats.fieldCount} label="fields" />
-      </section>
-
       <section className="page-section">
         <div className="section-heading">
           <div><div className="eyebrow">Entry points</div><h2>Root operations</h2></div>
@@ -106,8 +83,4 @@ export function OverviewPage() {
       {schema.description && <p className="schema-description">{schema.description}</p>}
     </div>
   );
-}
-
-function Stat({ icon, value, label }: { icon: React.ReactNode; value: number; label: string }) {
-  return <div className="stat"><span className="stat__icon">{icon}</span><strong>{value.toLocaleString()}</strong><span>{label}</span></div>;
 }

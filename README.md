@@ -11,10 +11,10 @@ The checked-in demo is generated from `https://api.cloudplatform.app.silverfort.
 - GraphQL queries, mutations, subscriptions, objects, inputs, enums, interfaces, unions, and scalars
 - `⌘ K` / `Ctrl K` fuzzy finder across types, operations, and fields (plus arguments and enum values on smaller schemas)
 - Field signatures, descriptions, arguments, defaults, deprecations, return-type links, and permalinks
-- Native embedded GraphQL workspace with generated operations, variables, headers, validation, and JSON responses
+- Native embedded GraphQL workspace with schema-driven field/filter selection, generated operations, opt-in variables, headers, validation, and JSON responses
 - Runtime schema switching through endpoint introspection, public SDL URLs, pasted SDL, or local files
 - Markdown and GFM in schema descriptions
-- Static deployment with no application server
+- Static documentation deployment with an optional locked-down execution relay
 - Responsive UI and bounded rendering for very large schemas
 
 ## Run locally
@@ -70,12 +70,15 @@ Copy `.env.example` to `.env.local` when you need deployment-specific settings:
 | Variable | Purpose |
 | --- | --- |
 | `VITE_SITE_NAME` | Product name shown in the header |
-| `VITE_GRAPHQL_ENDPOINT` | Apollo Sandbox endpoint and optional browser introspection target |
+| `VITE_GRAPHQL_ENDPOINT` | GraphQL execution endpoint and optional browser introspection target |
+| `VITE_GRAPHQL_PROXY_ENDPOINT` | Optional same-origin-friendly execution relay URL |
 | `VITE_SCHEMA_URL` | Public SDL URL loaded instead of `public/schema.graphql` |
 | `VITE_INTROSPECTION_HEADERS` | Public-only headers used for browser introspection |
 | `VITE_ALLOW_CONFIGURATION` | Set to `false` to lock schema switching in a published portal |
 
-The embedded workspace uses the bundled schema for browsing and client-side validation, so it does not need browser introspection. Live execution still requires the GraphQL server to allow the documentation site's origin through CORS.
+The embedded workspace uses the bundled schema for browsing and client-side validation, so it does not need browser introspection. Direct browser execution requires the GraphQL server to allow the documentation site's origin through CORS.
+
+For endpoints that do not allow the GitHub Pages origin, set `VITE_GRAPHQL_PROXY_ENDPOINT` to the included `/api/graphql` Vercel relay. The relay has a fixed Silverfort upstream, accepts only the demo and local development origins, requires both customer headers, and never caches credentials or responses.
 
 ## Commands
 

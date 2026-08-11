@@ -9,6 +9,7 @@ export interface GraphQLDocsConfig {
   site: {
     title: string;
     explorerEndpoint: string;
+    explorerProxyEndpoint?: string;
     allowConfiguration: boolean;
   };
 }

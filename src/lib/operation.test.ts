@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { schemaFromSDL } from './loadSchema';
-import { generateOperation, generateOperationVariables } from './operation';
+import { generateOperation, generateOperationVariables, getOperationBuilderDefaults } from './operation';
 import { SAMPLE_SCHEMA } from '../schema/sample';
 
 describe('generateOperation', () => {
@@ -20,5 +20,31 @@ describe('generateOperation', () => {
 
   it('generates starter variables from argument input types', () => {
     expect(generateOperationVariables(schema, 'Query', 'country')).toEqual({ code: 'replace-with-id' });
+  });
+
+  it('omits defaulted variables until the user selects them', () => {
+    const collectionSchema = schemaFromSDL(`
+      input NameComparison { eq: String, in: [String!] }
+      input EntityFilter { name: NameComparison, freeText: String }
+      input Paging { first: Int }
+      type Entity { id: ID!, name: String!, description: String }
+      type EntityEdge { node: Entity! }
+      type EntityConnection { totalCount: Int!, edges: [EntityEdge!]! }
+      type Query { entities(filter: EntityFilter! = {}, paging: Paging! = { first: 10 }): EntityConnection! }
+    `);
+
+    expect(generateOperationVariables(collectionSchema, 'Query', 'entities')).toEqual({});
+    expect(generateOperation(collectionSchema, 'Query', 'entities')).not.toContain('$filter');
+
+    const defaults = getOperationBuilderDefaults(collectionSchema, 'Query', 'entities');
+    expect(defaults.argumentNames).toEqual([]);
+    expect(defaults.fieldNames).toEqual(['id', 'name', 'description']);
+
+    const options = { argumentNames: ['filter'], filterFieldNames: ['name'], fieldNames: ['id', 'description'] };
+    expect(generateOperation(collectionSchema, 'Query', 'entities', options)).toContain('entities(filter: $filter)');
+    expect(generateOperation(collectionSchema, 'Query', 'entities', options)).toContain('description');
+    expect(generateOperationVariables(collectionSchema, 'Query', 'entities', options)).toEqual({
+      filter: { name: { eq: 'value' } },
+    });
   });
 });

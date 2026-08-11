@@ -11,6 +11,7 @@ const config = {
   site: {
     title: 'Silverfort API',
     explorerEndpoint: 'https://api.cloudplatform.app.silverfort.com/graphql',
+    explorerProxyEndpoint: 'https://silverfort-graphql-relay.vercel.app/api/graphql',
     allowConfiguration: true,
   },
 };
