@@ -132,7 +132,7 @@ function buildSelection(
   const nextAncestors = new Set(ancestors).add(namedType.name);
 
   if (selectedFields && namedType.name === selectionTargetName && (isObjectType(namedType) || isInterfaceType(namedType))) {
-    return buildExplicitSelection(schema, namedType, selectedFields, depth, nextAncestors);
+    return buildExplicitSelection(schema, namedType, selectedFields, nextAncestors);
   }
 
   if (isUnionType(namedType)) {
@@ -248,14 +248,45 @@ function buildExplicitSelection(
   schema: GraphQLSchema,
   type: Extract<GraphQLNamedType, { getFields(): unknown }>,
   selectedFields: Set<string>,
-  depth: number,
   ancestors: Set<string>,
 ) {
   const fields = type.getFields() as Record<string, GraphQLField<unknown, unknown>>;
   const selections = [...selectedFields].map((name) => fields[name]).filter(Boolean).map((field) => {
     const named = getNamedType(field.type);
     if (isScalarType(named) || isEnumType(named)) return field.name;
-    const nested = buildSelection(schema, field.type, depth + 1, ancestors);
+    const nested = buildExpandedSelection(schema, field.type, 0, ancestors);
+    return `${field.name} {\n${indent(nested, 1)}\n}`;
+  });
+  return selections.length ? selections.join('\n') : '__typename';
+}
+
+function buildExpandedSelection(
+  schema: GraphQLSchema,
+  outputType: GraphQLOutputType,
+  depth: number,
+  ancestors: Set<string>,
+): string {
+  const namedType = getNamedType(outputType);
+  if (isScalarType(namedType) || isEnumType(namedType)) return '';
+  if (depth >= 2 || ancestors.has(namedType.name)) return '__typename';
+
+  const nextAncestors = new Set(ancestors).add(namedType.name);
+  if (isUnionType(namedType)) {
+    const fragments = namedType.getTypes().map((member) => {
+      const nested = buildExpandedSelection(schema, member, depth + 1, nextAncestors);
+      return `... on ${member.name} {\n${indent(nested, 1)}\n}`;
+    });
+    return ['__typename', ...fragments].join('\n');
+  }
+
+  if (!isObjectType(namedType) && !isInterfaceType(namedType)) return '__typename';
+  const safeFields = Object.values(namedType.getFields()).filter(
+    (field) => !field.args.some((argument) => isNonNullType(argument.type) && !hasDefaultValue(argument)),
+  );
+  const selections = safeFields.map((field) => {
+    const fieldType = getNamedType(field.type);
+    if (isScalarType(fieldType) || isEnumType(fieldType)) return field.name;
+    const nested = buildExpandedSelection(schema, field.type, depth + 1, nextAncestors);
     return `${field.name} {\n${indent(nested, 1)}\n}`;
   });
   return selections.length ? selections.join('\n') : '__typename';

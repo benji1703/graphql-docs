@@ -27,7 +27,8 @@ describe('generateOperation', () => {
       input NameComparison { eq: String, in: [String!] }
       input EntityFilter { name: NameComparison, freeText: String }
       input Paging { first: Int }
-      type Entity { id: ID!, name: String!, description: String }
+      type EntityMetadata { active: Boolean!, label: String }
+      type Entity { id: ID!, name: String!, description: String, metadata: EntityMetadata }
       type EntityEdge { node: Entity! }
       type EntityConnection { totalCount: Int!, edges: [EntityEdge!]! }
       type Query { entities(filter: EntityFilter! = {}, paging: Paging! = { first: 10 }): EntityConnection! }
@@ -46,5 +47,13 @@ describe('generateOperation', () => {
     expect(generateOperationVariables(collectionSchema, 'Query', 'entities', options)).toEqual({
       filter: { name: { eq: 'value' } },
     });
+
+    const objectFieldDocument = generateOperation(collectionSchema, 'Query', 'entities', {
+      fieldNames: ['id', 'metadata'],
+    });
+    expect(objectFieldDocument).toContain('metadata {');
+    expect(objectFieldDocument).toContain('active');
+    expect(objectFieldDocument).toContain('label');
+    expect(objectFieldDocument).not.toContain('metadata {\n          __typename');
   });
 });
