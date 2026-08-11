@@ -37,6 +37,14 @@ export const PROVIDER_CATEGORIES = [
   { id: 'netsuite', label: 'NetSuite', patterns: ['netsuite'] },
 ] as const;
 
+export function getOperationProvider(providerId: string) {
+  return PROVIDER_CATEGORIES.find((provider) => provider.id === providerId);
+}
+
+export function providerPath(providerId: string) {
+  return `/providers/${encodeURIComponent(providerId)}`;
+}
+
 type OperationField = Pick<GraphQLField<unknown, unknown>, 'name'> & { type: GraphQLOutputType };
 
 export function getOperationProviderIds(field: OperationField) {

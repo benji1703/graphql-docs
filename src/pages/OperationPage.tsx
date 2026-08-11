@@ -14,7 +14,7 @@ import { Markdown } from '../components/Markdown';
 import { TypeBadge } from '../components/TypeBadge';
 import { describeUndocumentedArgument, describeUndocumentedField, humanizeGraphQLName } from '../lib/descriptions';
 import { generateOperation, generateOperationVariables } from '../lib/operation';
-import { getOperationProviders } from '../lib/operationProviders';
+import { getOperationProviders, providerPath } from '../lib/operationProviders';
 import { formatFieldSignature, typePath } from '../lib/schema';
 import { getSimilarOperations } from '../lib/similarOperations';
 import { NotFoundPage } from './NotFoundPage';
@@ -75,7 +75,7 @@ export function OperationPage({ schema, parentType, fieldName }: OperationPagePr
         <div className="operation-detail__heading">
           <div className="operation-detail__badges">
             <TypeBadge kind={kind} />
-            {providers.map((provider) => <span className="operation-provider-badge" key={provider.id}><Layers3 size={11} />{provider.label}</span>)}
+            {providers.map((provider) => <Link className="operation-provider-badge" to={providerPath(provider.id)} key={provider.id}><Layers3 size={11} />{provider.label}</Link>)}
           </div>
           <h1>{title}</h1>
           <code>{formatFieldSignature(field)}</code>
@@ -152,7 +152,7 @@ export function OperationPage({ schema, parentType, fieldName }: OperationPagePr
           <span className="eyebrow">At a glance</span>
           <dl>
             <div><dt>Operation</dt><dd>{kind}</dd></div>
-            {providers.length > 0 && <div><dt>Provider</dt><dd className="operation-detail__provider-value">{providers.map((provider) => provider.label).join(', ')}</dd></div>}
+            {providers.length > 0 && <div><dt>Provider</dt><dd className="operation-detail__provider-value">{providers.map((provider, index) => <span key={provider.id}>{index > 0 && ', '}<Link to={providerPath(provider.id)}>{provider.label}</Link></span>)}</dd></div>}
             <div><dt>GraphQL field</dt><dd><code>{field.name}</code></dd></div>
             <div><dt>Arguments</dt><dd>{field.args.length}</dd></div>
             <div><dt>Returns</dt><dd><Link to={typePath(returnType.name)}>{returnType.name}</Link></dd></div>

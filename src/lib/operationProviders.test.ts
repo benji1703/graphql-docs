@@ -1,6 +1,6 @@
 import { buildSchema } from 'graphql';
 import { describe, expect, it } from 'vitest';
-import { getOperationProviderBuckets, getOperationProviderIds, getOperationProviders, operationMatchesProvider } from './operationProviders';
+import { getOperationProvider, getOperationProviderBuckets, getOperationProviderIds, getOperationProviders, operationMatchesProvider, providerPath } from './operationProviders';
 
 describe('operation provider buckets', () => {
   const schema = buildSchema(`
@@ -30,5 +30,11 @@ describe('operation provider buckets', () => {
       { id: 'okta', label: 'Okta', count: 1 },
       { id: 'other', label: 'Core / Other', count: 1 },
     ]);
+  });
+
+  it('resolves provider parent routes', () => {
+    expect(getOperationProvider('aws')?.label).toBe('AWS');
+    expect(getOperationProvider('missing')).toBeUndefined();
+    expect(providerPath('google-workspace')).toBe('/providers/google-workspace');
   });
 });
