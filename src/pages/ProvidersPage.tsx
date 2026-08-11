@@ -2,7 +2,7 @@ import { ArrowRight, ChevronRight, Layers3, Search, X } from 'lucide-react';
 import { useDeferredValue, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useSchema } from '../context/SchemaContext';
-import { getOperationProviderIds, operationMatchesProvider, PROVIDER_CATEGORIES, providerPath } from '../lib/operationProviders';
+import { getOperationProviderBuckets, PROVIDER_CATEGORIES, providerPath } from '../lib/operationProviders';
 
 export function ProvidersPage() {
   const { schema } = useSchema();
@@ -10,18 +10,20 @@ export function ProvidersPage() {
   const deferredSearch = useDeferredValue(search.trim().toLowerCase());
   const queryFields = useMemo(() => schema.getQueryType() ? Object.values(schema.getQueryType()!.getFields()) : [], [schema]);
   const mutationFields = useMemo(() => schema.getMutationType() ? Object.values(schema.getMutationType()!.getFields()) : [], [schema]);
+  const queryBuckets = useMemo(() => getOperationProviderBuckets(queryFields), [queryFields]);
+  const mutationBuckets = useMemo(() => getOperationProviderBuckets(mutationFields), [mutationFields]);
   const providers = useMemo(() => PROVIDER_CATEGORIES.map((provider) => {
-    const queryCount = queryFields.filter((field) => operationMatchesProvider(field, provider.id)).length;
-    const mutationCount = mutationFields.filter((field) => operationMatchesProvider(field, provider.id)).length;
+    const queryCount = queryBuckets.find((bucket) => bucket.id === provider.id)?.count ?? 0;
+    const mutationCount = mutationBuckets.find((bucket) => bucket.id === provider.id)?.count ?? 0;
     return { ...provider, queryCount, mutationCount, total: queryCount + mutationCount };
-  }).filter((provider) => provider.total > 0), [mutationFields, queryFields]);
+  }).filter((provider) => provider.total > 0), [mutationBuckets, queryBuckets]);
   const visibleProviders = providers.filter((provider) => (
     !deferredSearch
     || provider.label.toLowerCase().includes(deferredSearch)
     || provider.id.includes(deferredSearch)
   ));
-  const categorizedQueries = useMemo(() => queryFields.filter((field) => getOperationProviderIds(field).length > 0).length, [queryFields]);
-  const categorizedMutations = useMemo(() => mutationFields.filter((field) => getOperationProviderIds(field).length > 0).length, [mutationFields]);
+  const categorizedQueries = queryFields.length - (queryBuckets.find((bucket) => bucket.id === 'other')?.count ?? 0);
+  const categorizedMutations = mutationFields.length - (mutationBuckets.find((bucket) => bucket.id === 'other')?.count ?? 0);
 
   return (
     <div className="page providers-page">

@@ -9,7 +9,7 @@ import { getOperationProvider, operationMatchesProvider } from '../lib/operation
 import { typePath } from '../lib/schema';
 import { NotFoundPage } from './NotFoundPage';
 
-const PAGE_SIZE = 100;
+const PAGE_SIZE = 48;
 type ProviderOperationKind = 'all' | 'query' | 'mutation';
 type ProviderOperation = {
   field: GraphQLField<unknown, unknown>;
@@ -38,12 +38,16 @@ export function ProviderPage() {
       : [],
     [provider, schema],
   );
-  const operations = useMemo<ProviderOperation[]>(() => {
-    const queries = kind === 'mutation' ? [] : queryOperations.map((field) => ({ field, kind: 'query' as const, parentName: schema.getQueryType()!.name }));
-    const mutations = kind === 'query' ? [] : mutationOperations.map((field) => ({ field, kind: 'mutation' as const, parentName: schema.getMutationType()!.name }));
+  const matchingOperations = useMemo(() => {
     const normalizedSearch = normalizeSearch(deferredSearch);
-    return [...queries, ...mutations].filter((operation) => matchesOperationSearch(operation.field, normalizedSearch));
-  }, [deferredSearch, kind, mutationOperations, queryOperations, schema]);
+    const filter = (fields: GraphQLField<unknown, unknown>[]) => normalizedSearch
+      ? fields.filter((field) => matchesOperationSearch(field, normalizedSearch))
+      : fields;
+    return {
+      queries: kind === 'mutation' ? [] : filter(queryOperations),
+      mutations: kind === 'query' ? [] : filter(mutationOperations),
+    };
+  }, [deferredSearch, kind, mutationOperations, queryOperations]);
 
   useEffect(() => {
     setKind('all');
@@ -54,7 +58,13 @@ export function ProviderPage() {
 
   if (!provider) return <NotFoundPage />;
   const total = queryOperations.length + mutationOperations.length;
-  const visibleOperations = operations.slice(0, visibleCount);
+  const operationCount = matchingOperations.queries.length + matchingOperations.mutations.length;
+  const visibleQueries = matchingOperations.queries.slice(0, visibleCount);
+  const visibleMutations = matchingOperations.mutations.slice(0, Math.max(0, visibleCount - visibleQueries.length));
+  const visibleOperations: ProviderOperation[] = [
+    ...visibleQueries.map((field) => ({ field, kind: 'query' as const, parentName: schema.getQueryType()!.name })),
+    ...visibleMutations.map((field) => ({ field, kind: 'mutation' as const, parentName: schema.getMutationType()!.name })),
+  ];
 
   return (
     <div className="page provider-page">
@@ -96,7 +106,7 @@ export function ProviderPage() {
           <ProviderKindTab active={kind === 'mutation'} onClick={() => setKind('mutation')} label="Mutations" count={mutationOperations.length} />
         </div>
 
-        {(search || kind !== 'all') && <p className="provider-operations__summary">{operations.length.toLocaleString()} matching {operations.length === 1 ? 'operation' : 'operations'}</p>}
+        {(search || kind !== 'all') && <p className="provider-operations__summary">{operationCount.toLocaleString()} matching {operationCount === 1 ? 'operation' : 'operations'}</p>}
         <div className="provider-operation-grid">
           {visibleOperations.map(({ field, kind: operationKind, parentName }) => (
             <Link to={typePath(parentName, field.name)} key={`${parentName}.${field.name}`}>
@@ -107,12 +117,12 @@ export function ProviderPage() {
               <span>Returns <strong>{getNamedType(field.type).name}</strong></span>
             </Link>
           ))}
-          {!operations.length && <div className="no-results">No {provider.label} operations match this search.</div>}
+          {!operationCount && <div className="no-results">No {provider.label} operations match this search.</div>}
         </div>
-        {operations.length > visibleCount && (
+        {operationCount > visibleCount && (
           <button className="load-more" type="button" onClick={() => setVisibleCount((count) => count + PAGE_SIZE)}>
-            Load {Math.min(PAGE_SIZE, operations.length - visibleCount).toLocaleString()} more
-            <span>{(operations.length - visibleCount).toLocaleString()} remaining</span>
+            Load {Math.min(PAGE_SIZE, operationCount - visibleCount).toLocaleString()} more
+            <span>{(operationCount - visibleCount).toLocaleString()} remaining</span>
           </button>
         )}
       </section>

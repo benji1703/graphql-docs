@@ -46,12 +46,21 @@ export function providerPath(providerId: string) {
 }
 
 type OperationField = Pick<GraphQLField<unknown, unknown>, 'name'> & { type: GraphQLOutputType };
+type DetectedProviderId = (typeof PROVIDER_CATEGORIES)[number]['id'];
+
+const providerTextCache = new WeakMap<object, string>();
+const providerIdsCache = new WeakMap<object, readonly DetectedProviderId[]>();
 
 export function getOperationProviderIds(field: OperationField) {
-  const searchable = normalizeProviderText(`${field.name} ${getNamedType(field.type).name}`);
-  return PROVIDER_CATEGORIES
+  const cached = providerIdsCache.get(field);
+  if (cached) return cached;
+
+  const searchable = getProviderSearchableText(field);
+  const providers = PROVIDER_CATEGORIES
     .filter((category) => category.patterns.some((pattern) => searchable.includes(` ${pattern} `)))
     .map((category) => category.id);
+  providerIdsCache.set(field, providers);
+  return providers;
 }
 
 export function getOperationProviders(field: OperationField) {
@@ -63,8 +72,12 @@ export function getOperationProviders(field: OperationField) {
 
 export function operationMatchesProvider(field: OperationField, provider: OperationProviderId) {
   if (provider === 'all') return true;
-  const providers = getOperationProviderIds(field);
-  return provider === 'other' ? providers.length === 0 : providers.includes(provider);
+  const cached = providerIdsCache.get(field);
+  if (cached) return provider === 'other' ? cached.length === 0 : cached.includes(provider);
+  if (provider === 'other') return getOperationProviderIds(field).length === 0;
+
+  const category = getOperationProvider(provider);
+  return Boolean(category?.patterns.some((pattern) => getProviderSearchableText(field).includes(` ${pattern} `)));
 }
 
 export function getOperationProviderBuckets(fields: readonly OperationField[]): OperationProviderBucket[] {
@@ -95,4 +108,12 @@ function normalizeProviderText(value: string) {
     .replace(/[^a-zA-Z0-9]+/g, ' ')
     .trim()
     .toLowerCase()} `;
+}
+
+function getProviderSearchableText(field: OperationField) {
+  const cached = providerTextCache.get(field);
+  if (cached) return cached;
+  const searchable = normalizeProviderText(`${field.name} ${getNamedType(field.type).name}`);
+  providerTextCache.set(field, searchable);
+  return searchable;
 }

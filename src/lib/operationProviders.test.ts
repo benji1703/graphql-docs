@@ -17,6 +17,7 @@ describe('operation provider buckets', () => {
 
   it('detects providers from operation and return type names', () => {
     expect(getOperationProviderIds(fields[0])).toEqual(['aws']);
+    expect(getOperationProviderIds(fields[0])).toBe(getOperationProviderIds(fields[0]));
     expect(getOperationProviders(fields[0])).toEqual([{ id: 'aws', label: 'AWS' }]);
     expect(operationMatchesProvider(fields[1], 'cloudflare')).toBe(true);
     expect(operationMatchesProvider(fields[3], 'other')).toBe(true);
