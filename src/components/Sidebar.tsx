@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { ChevronDown, Search } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import { useSchema } from '../context/SchemaContext';
+import { getOperationProviderBuckets } from '../lib/operationProviders';
 import { getTypeGroups, typePath } from '../lib/schema';
 
 const MAX_VISIBLE_PER_GROUP = 80;
@@ -14,6 +15,13 @@ export function Sidebar({ onNavigate }: SidebarProps) {
   const { schema } = useSchema();
   const groups = useMemo(() => getTypeGroups(schema), [schema]);
   const [filter, setFilter] = useState('');
+  const providerCount = useMemo(() => {
+    const operations = [
+      ...Object.values(schema.getQueryType()?.getFields() ?? {}),
+      ...Object.values(schema.getMutationType()?.getFields() ?? {}),
+    ];
+    return getOperationProviderBuckets(operations).filter((bucket) => bucket.id !== 'all' && bucket.id !== 'other').length;
+  }, [schema]);
   const roots = [
     { label: 'Queries', type: schema.getQueryType() },
     { label: 'Mutations', type: schema.getMutationType() },
@@ -31,6 +39,10 @@ export function Sidebar({ onNavigate }: SidebarProps) {
 
         <div className="sidebar__section">
           <div className="sidebar__heading">API reference</div>
+          <NavLink className="sidebar__root-link" to="/providers" onClick={onNavigate}>
+            <span>Providers</span>
+            <span className="sidebar__count">{providerCount}</span>
+          </NavLink>
           {roots.map(({ label, type }) => (
             <NavLink
               className="sidebar__root-link"

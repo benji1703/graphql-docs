@@ -327,6 +327,26 @@ button { color: inherit; }
 .similar-operations__grid p { margin: 12px 0 18px; color: #5d5953; font-size: 12px; line-height: 1.55; }
 .similar-operations__grid > a > span { margin-top: auto; color: var(--muted); font-size: 10px; }
 .similar-operations__grid > a > span strong { color: #333; }
+.providers-hero { min-height: 280px; padding: 46px 50px; display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 26px; color: #fff; border: 1px solid #1f1f1f; border-radius: 3px; background: #000; }
+.providers-hero__icon { width: 64px; height: 64px; display: grid; place-items: center; color: #111; border-radius: 50%; background: linear-gradient(135deg,#ffbe01,#ff7f3e); }
+.providers-hero .eyebrow { color: #ffbe01; }
+.providers-hero h1 { margin: 8px 0 9px; font-family: var(--display); font-size: clamp(48px, 7vw, 78px); font-weight: 400; line-height: 1; letter-spacing: -.04em; }
+.providers-hero p { max-width: 720px; margin: 0; color: #bbe9ff; font-size: 16px; line-height: 1.6; }
+.providers-catalog { margin-top: 66px; }
+.providers-catalog__toolbar { min-height: 76px; margin: 0 -8px 16px; padding: 8px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+.providers-catalog__toolbar h2 { margin: 5px 0 0; font-size: 30px; letter-spacing: -.035em; }
+.providers-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.providers-grid > a { min-width: 0; min-height: 225px; padding: 22px; display: flex; flex-direction: column; color: #111; border: 1px solid var(--line); border-radius: 3px; background: #fff; text-decoration: none; }
+.providers-grid > a:hover { border-color: #e39b52; box-shadow: inset 0 3px #ff7f3e; }
+.providers-grid__top { display: flex; align-items: center; justify-content: space-between; }
+.providers-grid__top > span { width: 40px; height: 40px; display: grid; place-items: center; border-radius: 50%; background: #ffde97; }
+.providers-grid__top > svg { color: #a44700; }
+.providers-grid h3 { margin: 22px 0 5px; font-family: var(--display); font-size: 28px; font-weight: 400; letter-spacing: -.025em; }
+.providers-grid > a > strong { color: #743000; font-size: 12px; }
+.providers-grid__counts { margin-top: auto; padding-top: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; border-top: 1px solid var(--line); }
+.providers-grid__counts span { display: flex; flex-direction: column; gap: 3px; color: var(--muted); font-size: 10px; letter-spacing: .06em; text-transform: uppercase; }
+.providers-grid__counts b { color: #111; font-family: var(--mono); font-size: 13px; letter-spacing: 0; }
+.providers-grid > .no-results { grid-column: 1 / -1; }
 .provider-hero { min-height: 280px; padding: 46px 50px; display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 26px; color: #fff; border: 1px solid #1f1f1f; border-radius: 3px; background: #000; }
 .provider-hero__icon { width: 64px; height: 64px; display: grid; place-items: center; color: #111; border-radius: 50%; background: linear-gradient(135deg,#ffbe01,#ff7f3e); }
 .provider-hero .eyebrow { color: #ffbe01; }
@@ -757,6 +777,7 @@ body { color: var(--ink); font-size: 16px; }
   .operation-detail__layout { grid-template-columns: 1fr; }
   .operation-detail__aside { position: static; margin-top: 30px; }
   .similar-operations__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .providers-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .provider-operation-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .native-explorer__workspace { grid-template-columns: 230px minmax(330px, 1fr) minmax(290px, .75fr); }
 }
@@ -807,6 +828,11 @@ body { color: var(--ink); font-size: 16px; }
   .operation-detail__return-fields > a:nth-child(n) { border-left: 0; border-top: 1px solid var(--line); }
   .operation-detail__return-fields > a:first-child { border-top: 0; }
   .similar-operations__grid { grid-template-columns: 1fr; }
+  .providers-hero { min-height: 0; padding: 30px 24px; align-items: start; }
+  .providers-hero__icon { width: 48px; height: 48px; }
+  .providers-hero h1 { font-size: 46px; }
+  .providers-catalog__toolbar { align-items: stretch; flex-direction: column; }
+  .providers-grid { grid-template-columns: 1fr; }
   .provider-hero { min-height: 0; padding: 30px 24px; align-items: start; }
   .provider-hero__icon { width: 48px; height: 48px; }
   .provider-hero h1 { font-size: 46px; }

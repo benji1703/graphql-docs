@@ -59,7 +59,7 @@ export function ProviderPage() {
   return (
     <div className="page provider-page">
       <nav className="breadcrumbs" aria-label="Breadcrumb">
-        <Link to="/">Reference</Link><ChevronRight size={14} /><span>Providers</span><ChevronRight size={14} /><strong>{provider.label}</strong>
+        <Link to="/">Reference</Link><ChevronRight size={14} /><Link to="/providers">Providers</Link><ChevronRight size={14} /><strong>{provider.label}</strong>
       </nav>
 
       <header className="provider-hero">
