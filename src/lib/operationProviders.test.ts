@@ -1,6 +1,6 @@
 import { buildSchema } from 'graphql';
 import { describe, expect, it } from 'vitest';
-import { getOperationProviderBuckets, getOperationProviderIds, operationMatchesProvider } from './operationProviders';
+import { getOperationProviderBuckets, getOperationProviderIds, getOperationProviders, operationMatchesProvider } from './operationProviders';
 
 describe('operation provider buckets', () => {
   const schema = buildSchema(`
@@ -17,6 +17,7 @@ describe('operation provider buckets', () => {
 
   it('detects providers from operation and return type names', () => {
     expect(getOperationProviderIds(fields[0])).toEqual(['aws']);
+    expect(getOperationProviders(fields[0])).toEqual([{ id: 'aws', label: 'AWS' }]);
     expect(operationMatchesProvider(fields[1], 'cloudflare')).toBe(true);
     expect(operationMatchesProvider(fields[3], 'other')).toBe(true);
   });

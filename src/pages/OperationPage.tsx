@@ -4,6 +4,7 @@ import {
   Check,
   ChevronRight,
   Copy,
+  Layers3,
   Play,
 } from 'lucide-react';
 import { getNamedType, isInterfaceType, isObjectType, type GraphQLObjectType, type GraphQLSchema } from 'graphql';
@@ -13,6 +14,7 @@ import { Markdown } from '../components/Markdown';
 import { TypeBadge } from '../components/TypeBadge';
 import { describeUndocumentedArgument, describeUndocumentedField, humanizeGraphQLName } from '../lib/descriptions';
 import { generateOperation, generateOperationVariables } from '../lib/operation';
+import { getOperationProviders } from '../lib/operationProviders';
 import { formatFieldSignature, typePath } from '../lib/schema';
 import { getSimilarOperations } from '../lib/similarOperations';
 import { NotFoundPage } from './NotFoundPage';
@@ -41,6 +43,7 @@ export function OperationPage({ schema, parentType, fieldName }: OperationPagePr
     : [];
   const kind = getOperationKind(schema, parentType);
   const title = humanizeGraphQLName(field.name);
+  const providers = getOperationProviders(field);
 
   const copyText = async (value: string, target: 'operation' | 'variables') => {
     try {
@@ -70,7 +73,10 @@ export function OperationPage({ schema, parentType, fieldName }: OperationPagePr
       <header className="operation-detail__header">
         <div className="operation-detail__icon"><Box size={23} /></div>
         <div className="operation-detail__heading">
-          <TypeBadge kind={kind} />
+          <div className="operation-detail__badges">
+            <TypeBadge kind={kind} />
+            {providers.map((provider) => <span className="operation-provider-badge" key={provider.id}><Layers3 size={11} />{provider.label}</span>)}
+          </div>
           <h1>{title}</h1>
           <code>{formatFieldSignature(field)}</code>
           {field.description
@@ -146,6 +152,7 @@ export function OperationPage({ schema, parentType, fieldName }: OperationPagePr
           <span className="eyebrow">At a glance</span>
           <dl>
             <div><dt>Operation</dt><dd>{kind}</dd></div>
+            {providers.length > 0 && <div><dt>Provider</dt><dd className="operation-detail__provider-value">{providers.map((provider) => provider.label).join(', ')}</dd></div>}
             <div><dt>GraphQL field</dt><dd><code>{field.name}</code></dd></div>
             <div><dt>Arguments</dt><dd>{field.args.length}</dd></div>
             <div><dt>Returns</dt><dd><Link to={typePath(returnType.name)}>{returnType.name}</Link></dd></div>

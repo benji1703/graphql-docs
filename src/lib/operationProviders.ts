@@ -46,6 +46,13 @@ export function getOperationProviderIds(field: OperationField) {
     .map((category) => category.id);
 }
 
+export function getOperationProviders(field: OperationField) {
+  const ids = new Set(getOperationProviderIds(field));
+  return PROVIDER_CATEGORIES
+    .filter((category) => ids.has(category.id))
+    .map(({ id, label }) => ({ id, label }));
+}
+
 export function operationMatchesProvider(field: OperationField, provider: OperationProviderId) {
   if (provider === 'all') return true;
   const providers = getOperationProviderIds(field);

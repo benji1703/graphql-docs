@@ -6,6 +6,7 @@ describe('generated schema descriptions', () => {
   it('humanizes camel case and preserves common acronyms', () => {
     expect(humanizeGraphQLName('abstractApplicationEntities')).toBe('Abstract Application Entities');
     expect(humanizeGraphQLName('awsIdentityById')).toBe('AWS Identity By ID');
+    expect(humanizeGraphQLName('userAwsIamEntity')).toBe('User AWS IAM Entity');
     expect(humanizeGraphQLName('AccessLevelGcp')).toBe('Access Level GCP');
     expect(humanizeGraphQLName('i18n_dataSource')).toBe('Translated Data Source');
   });

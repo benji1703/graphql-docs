@@ -1,7 +1,7 @@
 import type { GraphQLField, GraphQLSchema } from 'graphql';
 
 const ACRONYMS = new Set([
-  'ad', 'ai', 'api', 'aws', 'csv', 'gcp', 'graphql', 'http', 'https', 'id', 'idp', 'ip', 'json', 'mfa',
+  'ad', 'ai', 'api', 'aws', 'csv', 'gcp', 'graphql', 'http', 'https', 'iam', 'id', 'idp', 'ip', 'json', 'mfa',
   'nhi', 'oauth', 'okta', 'otp', 'pam', 'saml', 'sso', 'tls', 'url', 'uuid',
 ]);
 
